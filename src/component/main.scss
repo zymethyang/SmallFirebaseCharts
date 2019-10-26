@@ -1,0 +1,47 @@
+.container{
+    display: flex;
+    flex-direction: row;
+    flex-flow: wrap;
+    height: 100vh;
+    width: 100vw;
+}
+
+.card{
+    -webkit-box-shadow: 10px 13px 20px 0px rgba(0,0,0,0.24);
+    -moz-box-shadow: 10px 13px 20px 0px rgba(0,0,0,0.24);
+    box-shadow: 10px 13px 20px 0px rgba(0,0,0,0.24);
+    
+    margin-top: 30px;
+    margin-left: 30px;
+
+    padding-bottom: 20px;
+    padding-left: 10px;
+    padding-right: 30px;
+
+    &--container{
+        width: 44vw;
+    }
+}
+
+.btn{
+    &--container{
+        width: 44vw;
+
+        display: flex;
+        flex-direction: row;
+        flex-flow: wrap;
+    }
+
+    &--style{
+        width: 80px;
+        height: 80px;
+
+        margin-top: 10%;
+        margin-left: 10%;
+
+        font-size: 50px;
+
+        cursor: pointer;
+    }
+    
+}
