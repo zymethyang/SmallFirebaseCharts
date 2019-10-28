@@ -22,7 +22,9 @@ class MainComponent extends React.Component {
     }
 
     componentDidMount() {
+        //Subcribe database, khi có dữ liệu điều khiển thay đổi thì lấy về
         firebase.database().ref(`/realtime/control/device_01`).on('value', (value) => {
+            //Sau đó ghi giá trị thay đổi vào this.state
             this.setState({ device_01: value.val() })
         });
         firebase.database().ref(`/realtime/control/device_02`).on('value', (value) => {
@@ -38,10 +40,17 @@ class MainComponent extends React.Component {
             this.setState({ device_05: value.val() })
         });
 
+        //Subcribe database, nếu có dữ liệu cảm biến thay đổi thì lấy về.
+
         firebase.database().ref('/realtime/charts').on('value', (data) => {
             var { chart_01, chart_02, chart_03, labels } = this.state;
+
+            //Ép kiểu về float sau đó đẩy vào hàng đợi.
             chart_01.push(parseFloat(data.val().chart_01));
+
+            //Sau đó shift 1 phần từ đầu của hàng đợi ra.
             chart_01.shift();
+
             chart_02.push(parseFloat(data.val().chart_02));
             chart_02.shift();
             chart_03.push(parseFloat(data.val().chart_03));
@@ -55,6 +64,8 @@ class MainComponent extends React.Component {
                 chart_03,
                 labels
             });
+
+            //cập nhật lại biểu đồ
             this.chart01.update();
             this.chart02.update();
             this.chart03.update();
@@ -87,11 +98,6 @@ class MainComponent extends React.Component {
             },
             options: {
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }],
                     xAxes: [
                         {
                             ticks: {
@@ -124,11 +130,6 @@ class MainComponent extends React.Component {
             },
             options: {
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }],
                     xAxes: [
                         {
                             ticks: {
@@ -161,11 +162,6 @@ class MainComponent extends React.Component {
             },
             options: {
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }],
                     xAxes: [
                         {
                             ticks: {
@@ -207,19 +203,19 @@ class MainComponent extends React.Component {
                 <div className="card">
                     <div className="btn--container">
                         <div style={{ color: device_01 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(1)}>
-                            01
+                            ĐÈN
                         </div>
                         <div style={{ color: device_02 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(2)}>
-                            02
+                            BƠM
                         </div>
                         <div style={{ color: device_03 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(3)}>
-                            03
+                            QUẠT
                         </div>
                         <div style={{ color: device_04 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(4)}>
-                            04
+                            PHUN SƯƠNG
                         </div>
                         <div style={{ color: device_05 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(5)}>
-                            05
+                            MÁI CHE
                         </div>
                     </div>
                 </div>
