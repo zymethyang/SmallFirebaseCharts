@@ -5,6 +5,8 @@
   "dependencies": {
     "chart.js": "^2.9.0",
     "firebase": "^7.2.2",
+    "moment": "^2.24.0",
+    "mqtt": "^3.0.0",
     "node-sass": "^4.13.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",

@@ -1,9 +1,8 @@
 import React from 'react';
+import moment from 'moment';
 import './main.scss';
 var Chart = require('chart.js');
-const firebase = require('../shared/firebase');
-require('firebase/database');
-
+const mqtt = require('mqtt')
 
 class MainComponent extends React.Component {
     constructor(props) {
@@ -13,63 +12,103 @@ class MainComponent extends React.Component {
             chart_02: new Array(25),
             chart_03: new Array(25),
             labels: new Array(25),
-            device_01: false,
-            device_02: false,
-            device_03: false,
-            device_04: false,
-            device_05: false
+            lastActionTime: 0,
+            d_01: 1,
+            d_02: 1,
+            d_03: 1,
+            d_04: 1,
+            d_05: 1,
+            client: undefined
         }
     }
 
     componentDidMount() {
-        //Subcribe database, khi có dữ liệu điều khiển thay đổi thì lấy về
-        firebase.database().ref(`/realtime/control/device_01`).on('value', (value) => {
-            //Sau đó ghi giá trị thay đổi vào this.state
-            this.setState({ device_01: value.val() })
-        });
-        firebase.database().ref(`/realtime/control/device_02`).on('value', (value) => {
-            this.setState({ device_02: value.val() })
-        });
-        firebase.database().ref(`/realtime/control/device_03`).on('value', (value) => {
-            this.setState({ device_03: value.val() })
-        });
-        firebase.database().ref(`/realtime/control/device_04`).on('value', (value) => {
-            this.setState({ device_04: value.val() })
-        });
-        firebase.database().ref(`/realtime/control/device_05`).on('value', (value) => {
-            this.setState({ device_05: value.val() })
-        });
+        const options = { username: 'sammy', password: '12345678' };
+        const client = mqtt.connect('ws://13.229.222.102:8883', options)
+        this.setState({ client });
+        client.on('connect', function () {
+            client.subscribe('Qx3rlKNqKPJAISs', function (err) {
+                if (!err) {
+                    console.log("Connected");
+                }
+            })
+        })
 
+        client.on('message', (topic, message) => {
+            const jsonMessage = JSON.parse(message.toString());
+
+            if (jsonMessage.hasOwnProperty('chart_01')) {
+                //Ép kiểu về float sau đó đẩy vào hàng đợi.
+                chart_01.push(parseFloat(jsonMessage.chart_01));
+                //Sau đó shift 1 phần từ đầu của hàng đợi ra.
+                chart_01.shift();
+                //cập nhật lại biểu đồ
+                this.setState({ chart_01 });
+                labels.push('');
+                labels.shift();
+
+                this.setState({ labels });
+                this.chart01.update();
+            }
+
+            if (jsonMessage.hasOwnProperty('chart_02')) {
+                chart_02.push(parseFloat(jsonMessage.chart_02));
+                chart_02.shift();
+                this.setState({ chart_02 });
+                this.chart02.update();
+            }
+
+            if (jsonMessage.hasOwnProperty('chart_03')) {
+                chart_03.push(parseFloat(jsonMessage.chart_03));
+                chart_03.shift();
+                this.setState({ chart_03 });
+                this.chart03.update();
+            }
+
+            /*
+            if (jsonMessage.hasOwnProperty('d01')) {
+                console.log(jsonMessage);
+                if (jsonMessage === 0) {
+                    this.setState({ d_01: 2 });
+                } else {
+                    this.setState({ d_01: 1 });
+                }
+            }
+
+            if (jsonMessage.hasOwnProperty('d02')) {
+                if (jsonMessage.d02 === 0) {
+                    this.setState({ d_02: 2 });
+                } else {
+                    this.setState({ d_02: 1 });
+                }
+            }
+
+            if (jsonMessage.hasOwnProperty('d03')) {
+                if (jsonMessage.d03 === 0) {
+                    this.setState({ d_03: 2 });
+                } else {
+                    this.setState({ d_03: 1 });
+                }
+            }
+
+            if (jsonMessage.hasOwnProperty('d04')) {
+                if (jsonMessage.d04 === 0) {
+                    this.setState({ d_04: 2 });
+                } else {
+                    this.setState({ d_04: 1 });
+                }
+            }
+
+            if (jsonMessage.hasOwnProperty('d05')) {
+                if (jsonMessage.d05 === 0) {
+                    this.setState({ d_05: 2 });
+                } else {
+                    this.setState({ d_05: 1 });
+                }
+            }
+            */
+        })
         //Subcribe database, nếu có dữ liệu cảm biến thay đổi thì lấy về.
-
-        firebase.database().ref('/realtime/charts').on('value', (data) => {
-            var { chart_01, chart_02, chart_03, labels } = this.state;
-
-            //Ép kiểu về float sau đó đẩy vào hàng đợi.
-            chart_01.push(parseFloat(data.val().chart_01));
-
-            //Sau đó shift 1 phần từ đầu của hàng đợi ra.
-            chart_01.shift();
-
-            chart_02.push(parseFloat(data.val().chart_02));
-            chart_02.shift();
-            chart_03.push(parseFloat(data.val().chart_03));
-            chart_03.shift();
-            labels.push('');
-            labels.shift();
-
-            this.setState({
-                chart_01,
-                chart_02,
-                chart_03,
-                labels
-            });
-
-            //cập nhật lại biểu đồ
-            this.chart01.update();
-            this.chart02.update();
-            this.chart03.update();
-        });
 
         const { labels, chart_01, chart_02, chart_03 } = this.state;
 
@@ -172,17 +211,47 @@ class MainComponent extends React.Component {
                 }
             }
         });
-
     }
 
     onClickControl(index) {
-        firebase.database().ref(`/realtime/control/device_0${index}`).once('value', (value) => {
-            firebase.database().ref(`/realtime/control/device_0${index}`).set(!value.val());
-        });
+        var currentTime = moment().unix(new Date());
+        var { lastActionTime } = this.state;
+
+        if (currentTime - lastActionTime > 2) {
+            var { d_01, d_02, d_03, d_04, d_05 } = this.state;
+            switch (index) {
+                case 1:
+                    d_01 = d_01 === 1 ? 2 : 1;
+                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_01 }))
+                    console.log(JSON.stringify({ d_01 }));
+                    break;
+                case 2:
+                    d_02 = d_02 === 1 ? 2 : 1;
+                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_02 }))
+                    break;
+                case 3:
+                    d_03 = d_03 === 1 ? 2 : 1;
+                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_03 }))
+                    break;
+                case 4:
+                    d_04 = d_04 === 1 ? 2 : 1;
+                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_04 }))
+                    break;
+                case 5:
+                    d_05 = d_05 === 1 ? 2 : 1;
+                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_05 }))
+                    break;
+            }
+            this.setState({ d_01, d_02, d_03, d_04, d_05 });
+            lastActionTime = moment().unix(new Date());
+            this.setState({ lastActionTime });
+        } else {
+            alert("Chờ 2 giây nữa đi ma tốc độ!")
+        }
     }
 
     render() {
-        const { device_01, device_02, device_03, device_04, device_05 } = this.state;
+        const { d_01, d_02, d_03, d_04, d_05 } = this.state;
         return (
             <div className="container">
                 <div className="card">
@@ -202,19 +271,19 @@ class MainComponent extends React.Component {
                 </div>
                 <div className="card">
                     <div className="btn--container">
-                        <div style={{ color: device_01 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(1)}>
+                        <div style={{ color: d_01 === 2 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(1)}>
                             ĐÈN
                         </div>
-                        <div style={{ color: device_02 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(2)}>
+                        <div style={{ color: d_02 === 2 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(2)}>
                             BƠM
                         </div>
-                        <div style={{ color: device_03 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(3)}>
+                        <div style={{ color: d_03 === 2 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(3)}>
                             QUẠT
                         </div>
-                        <div style={{ color: device_04 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(4)}>
+                        <div style={{ color: d_04 === 2 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(4)}>
                             PHUN SƯƠNG
                         </div>
-                        <div style={{ color: device_05 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(5)}>
+                        <div style={{ color: d_05 === 2 ? 'purple' : 'black' }} className="btn--style" onClick={() => this.onClickControl(5)}>
                             MÁI CHE
                         </div>
                     </div>

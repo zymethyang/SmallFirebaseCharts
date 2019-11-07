@@ -20,12 +20,22 @@
 
     &--container{
         width: 44vw;
+
+        @media screen and (max-width: 600px){
+            width: 100vw;
+            margin-left: 0px;
+            padding-left: 0px;
+            padding-right: 0px;
+        }
     }
 }
 
 .btn{
     &--container{
         width: 44vw;
+        @media screen and (max-width: 600px){
+            width: 100vw;
+        }
 
         display: flex;
         flex-direction: row;
