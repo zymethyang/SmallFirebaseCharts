@@ -55,7 +55,7 @@ class MainComponent extends React.Component {
                 chart_02.shift();
                 this.setState({ chart_02 });
 
-                chart_03.push(Math.round((parseFloat(jsonMessage.chart_03) / 1024) * 100));
+                chart_03.push(parseFloat(jsonMessage.chart_03));
                 chart_03.shift();
                 this.setState({ chart_03 });
 
@@ -63,7 +63,7 @@ class MainComponent extends React.Component {
 
                 this.chart01.update();
 
-                this.setState({ temp: parseFloat(jsonMessage.chart_01), hum: parseFloat(jsonMessage.chart_02), hum_g: Math.round((parseFloat(jsonMessage.chart_03) / 1024) * 100) })
+                this.setState({ temp: parseFloat(jsonMessage.chart_01), hum: parseFloat(jsonMessage.chart_02), hum_g: parseFloat(jsonMessage.chart_03) })
 
             }
 
