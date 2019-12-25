@@ -43,9 +43,10 @@ class MainComponent extends React.Component {
 
             if (jsonMessage.hasOwnProperty('chart_01')) {
                 //Ép kiểu về float sau đó đẩy vào hàng đợi.
+                // [1,2,3,4,5] => push(6) => [1,2,3,4,5,6]
                 chart_01.push(parseFloat(jsonMessage.chart_01));
                 //Sau đó shift 1 phần từ đầu của hàng đợi ra.
-                chart_01.shift();
+                chart_01.shift(); //[1,2,3,4,5,6] => shift() => [2,3,4,5,6]
                 //cập nhật lại biểu đồ
                 this.setState({ chart_01 });
                 labels.push('');
@@ -134,53 +135,43 @@ class MainComponent extends React.Component {
     }
 
     onClickControl(index) {
-        var currentTime = moment().unix(new Date());
-        var { lastActionTime } = this.state;
-
-        if (currentTime - lastActionTime > 2) {
-            var { d_01, d_02, d_03, d_04, d_05 } = this.state;
-            switch (index) {
-                case 1:
-                    if (d_01 === 1)
-                        d_01 = 2
-                    else
-                        d_01 = 1
-                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_01: d_01 }))
-                    break;
-                case 2:
-                    if (d_02 === 1)
-                        d_02 = 2
-                    else
-                        d_02 = 1
-                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_02 }))
-                    break;
-                case 3:
-                    if (d_03 === 1)
-                        d_03 = 2
-                    else
-                        d_03 = 1
-                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_03 }))
-                    break;
-                case 4:
-                    if (d_04 === 1)
-                        d_04 = 2
-                    else
-                        d_04 = 1
-                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_04 }))
-                    break;
-                case 5:
-                    if (d_05 === 1)
-                        d_05 = 2
-                    else
-                        d_05 = 1
-                    this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_05 }))
-                    break;
-            }
-            lastActionTime = moment().unix(new Date());
-            this.setState({ lastActionTime });
-            alert("Đã gửi lệnh!")
-        } else {
-            alert("Chờ 2 giây nữa đi ma tốc độ!")
+        var { d_01, d_02, d_03, d_04, d_05 } = this.state;
+        switch (index) {
+            case 1:
+                if (d_01 === 1)
+                    d_01 = 2
+                else
+                    d_01 = 1
+                this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_01: d_01 }))
+                break;
+            case 2:
+                if (d_02 === 1)
+                    d_02 = 2
+                else
+                    d_02 = 1
+                this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_02 }))
+                break;
+            case 3:
+                if (d_03 === 1)
+                    d_03 = 2
+                else
+                    d_03 = 1
+                this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_03 }))
+                break;
+            case 4:
+                if (d_04 === 1)
+                    d_04 = 2
+                else
+                    d_04 = 1
+                this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_04 }))
+                break;
+            case 5:
+                if (d_05 === 1)
+                    d_05 = 2
+                else
+                    d_05 = 1
+                this.state.client.publish('FWpfOR6wyKZIoYj', JSON.stringify({ d_05 }))
+                break;
         }
     }
 
@@ -212,6 +203,13 @@ class MainComponent extends React.Component {
 
                     <div className="btn--container">
                         <div className="btn--style" onClick={() => this.onClickControl(1)}>
+                            {/*
+                            if(d_01 === 2){
+                                 <img src={"./on-black.png"} style={{ width: '100%', height: '100%' }} />
+                            }else{
+                                <img src={"./on-black.png"} style={{ width: '100%', height: '100%' }} />
+                            }
+                            */}
                             <img src={d_01 === 2 ? "./on-black.png" : "./on.png"} style={{ width: '100%', height: '100%' }} />
                             <div className="btn--title">Đèn</div>
                         </div>
